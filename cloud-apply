@@ -1,0 +1,7 @@
+#!/bin/sh
+/etc/rc.d/hostname stop
+/etc/rc.d/hostname start
+/etc/rc.d/netif stop
+/etc/rc.d/netif start
+/etc/rc.d/routing stop
+/etc/rc.d/routing start
