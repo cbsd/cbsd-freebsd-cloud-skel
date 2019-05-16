@@ -1,0 +1,3 @@
+truncate for log/pkg clean/history
+key in /etc/ssh/*
+
