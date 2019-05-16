@@ -21,7 +21,7 @@ cloudfinal_start()
 	${command} modules --mode final
 	if [ -r /cloud-apply ]; then
 		/bin/sh /cloud-apply
-		/bin/rm -f /cloud-apply
+		/bin/mv /cloud-apply /var/tmp/
 	fi
 }
 

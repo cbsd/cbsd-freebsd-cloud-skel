@@ -1,7 +1,27 @@
 #!/bin/sh
-/etc/rc.d/hostname stop
-/etc/rc.d/hostname start
-/etc/rc.d/netif stop
-/etc/rc.d/netif start
-/etc/rc.d/routing stop
-/etc/rc.d/routing start
+
+/sbin/zfs list zroot > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+	zfsfeat=1
+else
+	zfsfeat=0
+fi
+
+/sbin/gpart recover vtbd0  >> /var/log/cloud-apply.log 2>&1
+
+if [ ${zfsfeat} -eq 0 ]; then
+	/sbin/gpart resize -i2 vtbd0  >> /var/log/cloud-apply.log 2>&1
+else
+	/sbin/gpart resize -i4 vtbd0  >> /var/log/cloud-apply.log 2>&1
+	/sbin/zpool set autoexpand=on zroot >> /var/log/cloud-apply.log 2>&1
+	/sbin/zpool online -e zroot vtbd0p4  >> /var/log/cloud-apply.log 2>&1
+fi
+
+# ZFS
+/etc/rc.d/hostname stop  >> /var/log/cloud-apply.log 2>&1
+/etc/rc.d/hostname start  >> /var/log/cloud-apply.log 2>&1
+/etc/rc.d/netif stop  >> /var/log/cloud-apply.log 2>&1
+/etc/rc.d/netif start  >> /var/log/cloud-apply.log 2>&1
+/etc/rc.d/routing stop  >> /var/log/cloud-apply.log 2>&1
+/etc/rc.d/routing start  >> /var/log/cloud-apply.log 2>&1
