@@ -1,6 +1,8 @@
 #!/bin/sh
 
-/sbin/zfs list zroot > /dev/null 2>&1
+ZPOOL="tank"
+
+/sbin/zfs list tank > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
 	zfsfeat=1
@@ -13,9 +15,14 @@ fi
 if [ ${zfsfeat} -eq 0 ]; then
 	/sbin/gpart resize -i2 vtbd0  >> /var/log/cloud-apply.log 2>&1
 else
-	/sbin/gpart resize -i4 vtbd0  >> /var/log/cloud-apply.log 2>&1
-	/sbin/zpool set autoexpand=on zroot >> /var/log/cloud-apply.log 2>&1
-	/sbin/zpool online -e zroot vtbd0p4  >> /var/log/cloud-apply.log 2>&1
+	consumer=$( ls -1 /dev/diskid/ | head -n1 )
+	last_part=$( ls -1 /dev/diskid/ | tail -n1 )
+	p2=${last_part##*${consumer}}
+	index=$( echo ${p2} | tr -d [aA-zZ] | awk '{ printf $1 }' )
+	/sbin/gpart recover diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
+	/sbin/gpart resize -i${index} diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
+	/sbin/zpool set autoexpand=on tank >> /var/log/cloud-apply.log 2>&1
+	/sbin/zpool online -e tank diskid/${consumer}${p2}  >> /var/log/cloud-apply.log 2>&1
 fi
 
 # ZFS
