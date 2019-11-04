@@ -13,4 +13,5 @@ cp -a /root/cbsd-freebsd-cloud-skel/root/etc/mail/aliases ${data}/etc/mail/
 cp -a /root/cbsd-freebsd-cloud-skel/root/etc/mail/aliases.db ${data}/etc/mail/
 rm -rf ${data}/var/cache/pkg/*
 rm -rf ${data}/var/tmp/* ${data}/tmp/*
+rm -rf ${data}//var/cache/distfiles/*
 truncate -s0 ${data}/etc/motd
