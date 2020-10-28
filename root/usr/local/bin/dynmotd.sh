@@ -38,9 +38,25 @@ CPUName=$( sysctl -qn hw.model )
 NCores=$( sysctl -qn hw.ncpu )
 
 uplink_iface4=$( /sbin/route -n -4 get 0.0.0.0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
-ip=$( /sbin/ifconfig ${uplink_iface4} | /usr/bin/awk '/inet [0-9]+/{print $2}'|/usr/bin/head -n1 )
+uplink_iface6=$( /sbin/route -n -6 get ::0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
 
-disks=$( sysctl -qn kern.disks )
+if [ -n "${uplink_iface6}" ]; then
+	ip6=$( /sbin/ifconfig ${uplink_iface6} | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
+else
+	# route can not work in jail, looks at all
+	ip6=$( /sbin/ifconfig | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
+fi
+
+if [ -n "${uplink_iface4}" ]; then
+	ip4=$( /sbin/ifconfig ${uplink_iface4} | /usr/bin/awk '/inet [0-9]+/{print $2}'| /usr/bin/head -n1 )
+else
+	# route can not work in jail, looks at all
+	ip4=$( /sbin/ifconfig | /usr/bin/awk '/inet [0-9]+/{print $2}'| /usr/bin/head -n1 )
+fi
+
+disks=$( /sbin/sysctl -qn kern.disks )
+
+active_zpool=$( timeout 2 /sbin/zpool get -Ho value name | xargs )
 
 mem=$( echo $TOTAL_MEM' total / '$FREE_MEM' free' )
 username=$( whoami )
@@ -49,11 +65,12 @@ if [ -e /var/lib/puppet/puppet.info ]; then
 fi
 echo -e "
 ------------------: System Data :-------------------------------
-Hostname:     \033[1;33m$name\033[0m ($ip)
+Hostname:     \033[1;33m$name\033[0m ( ${ip4} ${ip6} )
 Kernel:       $(uname -r) ($os)
 Uptime:      $(uptime | sed 's/.*up ([^,]*), .*/1/')
 CPU:          $CPUName ($NCores cores)
 Memory(Mb):   $mem
+Active Zpool: ${active_zpool}
 ------------------------: Logged as: [\033[0;32m$(whoami)\033[0m]  ------------------------------
 
   This image was created for ClonOS/CBSD Project.
@@ -61,3 +78,7 @@ Memory(Mb):   $mem
   CBSD issues page:       https://github.com/cbsd/cbsd/issues
   Please Support Us:      https://clonos.tekroutine.com/contact.html
 "
+if Tx=$( /usr/local/bin/tmux ls 2> /dev/null ); then
+	echo -e "\033[0;31mTmux Sessions:\033[0m"
+	echo $Tx
+fi
