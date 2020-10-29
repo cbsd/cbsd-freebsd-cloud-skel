@@ -1,3 +1,5 @@
 truncate for log/pkg clean/history
 key in /etc/ssh/*
 remove root password ('*') via vipw
+
+## make sure host system have vfs.zfs.min_auto_ashift=12 for ZFS
