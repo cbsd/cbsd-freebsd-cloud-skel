@@ -15,17 +15,21 @@ fi
 if [ ${zfsfeat} -eq 0 ]; then
 	/sbin/gpart resize -i2 vtbd0  >> /var/log/cloud-apply.log 2>&1
 else
-#	consumer=$( ls -1 /dev/diskid/ | head -n1 )
-#	last_part=$( ls -1 /dev/diskid/ | tail -n1 )
-#	p2=${last_part##*${consumer}}
-#	index=$( echo ${p2} | tr -d [aA-zZ] | awk '{ printf $1 }' )
-#	/sbin/gpart recover diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
-	/sbin/gpart recover vtbd0  >> /var/log/cloud-apply.log 2>&1
-#	/sbin/gpart resize -i${index} diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
-	/sbin/gpart resize -i3 /dev/vtbd0 >> /var/log/cloud-apply.log 2>&1
+#	/sbin/gpart recover vtbd0  >> /var/log/cloud-apply.log 2>&1
+#	/sbin/gpart resize -i3 /dev/vtbd0 >> /var/log/cloud-apply.log 2>&1
+#	/sbin/zpool set autoexpand=on tank >> /var/log/cloud-apply.log 2>&1
+#	/sbin/zpool online -e tank /dev/vtbd0p3 >> /var/log/cloud-apply.log 2>&1
+	consumer=$( ls -1 /dev/diskid/ | head -n1 )
+	last_part=$( ls -1 /dev/diskid/ | tail -n1 )
+	p2=${last_part##*${consumer}}
+	index=$( echo ${p2} | tr -d [aA-zZ] | awk '{ printf $1 }' )
+	/sbin/gpart recover diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
+#       /sbin/gpart recover vtbd0  >> /var/log/cloud-apply.log 2>&1
+	/sbin/gpart resize -i${index} diskid/${consumer}  >> /var/log/cloud-apply.log 2>&1
+#       /sbin/gpart resize -i3 /dev/vtbd0 >> /var/log/cloud-apply.log 2>&1
 	/sbin/zpool set autoexpand=on tank >> /var/log/cloud-apply.log 2>&1
-#	/sbin/zpool online -e tank diskid/${consumer}${p2}  >> /var/log/cloud-apply.log 2>&1
-	/sbin/zpool online -e tank /dev/vtbd0p3 >> /var/log/cloud-apply.log 2>&1
+	/sbin/zpool online -e tank diskid/${consumer}${p2}  >> /var/log/cloud-apply.log 2>&1
+#       /sbin/zpool online -e tank /dev/vtbd0p3 >> /var/log/cloud-apply.log 2>&1
 fi
 
 # CBSD CLOUD addon
