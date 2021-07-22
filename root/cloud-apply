@@ -28,10 +28,41 @@ else
 	/sbin/zpool online -e tank /dev/vtbd0p3 >> /var/log/cloud-apply.log 2>&1
 fi
 
-# ZFS
+# CBSD CLOUD addon
+/sbin/mount -t cd9660 /dev/iso9660/cidata /mnt
+ret=$?
+
+if [ ${ret} -eq 0 ]; then
+	ip1=
+	gw1=
+
+	if [ -r /mnt/cbsd-network-config ]; then
+
+		echo "found cbsd-network-config" >> /var/log/cloud-apply.log 2>&1
+
+		. /mnt/cbsd-network-config
+		/sbin/umount /mnt || true
+
+		echo "cbsd-network-config: ip1[$ip1] gw1[$gw1]" >> /var/log/cloud-apply.log 2>&1
+
+		if [ -n "${ip1}" ]; then
+			/usr/sbin/sysrc -q ifconfig_vtnet1= > /dev/null 2>&1
+			/usr/sbin/sysrc -q ifconfig_vtnet1_ipv6="${ip1}" > /dev/null 2>&1
+			/sbin/ifconfig vtnet1 inet6 ${ip1} up > /dev/null 2>&1
+		fi
+
+		if [ -n "${gw1}" ]; then
+			/usr/sbin/sysrc -q ipv6_defaultrouter="${gw1}" > /dev/null 2>&1
+			/sbin/route -6 add default ${gw1}  > /dev/null 2>&1
+		fi
+	fi
+fi
+
 /etc/rc.d/hostname stop  >> /var/log/cloud-apply.log 2>&1
 /etc/rc.d/hostname start  >> /var/log/cloud-apply.log 2>&1
 /etc/rc.d/netif stop  >> /var/log/cloud-apply.log 2>&1
 /etc/rc.d/netif start  >> /var/log/cloud-apply.log 2>&1
 /etc/rc.d/routing stop  >> /var/log/cloud-apply.log 2>&1
 /etc/rc.d/routing start  >> /var/log/cloud-apply.log 2>&1
+
+exit 0
