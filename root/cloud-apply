@@ -59,6 +59,7 @@ if [ ${ret} -eq 0 ]; then
 			/usr/sbin/sysrc -q ipv6_defaultrouter="${gw1}" > /dev/null 2>&1
 			/sbin/route -6 add default ${gw1}  > /dev/null 2>&1
 		fi
+		/usr/bin/killall -9 dhclient
 	fi
 fi
 

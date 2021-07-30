@@ -1,4 +1,4 @@
-cbsd jcreate jname=cloud baserw=0 ver=13.0 pkglist="py38-cloud-init"
+cbsd jcreate jname=cloud baserw=1 ver=13.0 pkglist="py38-cloud-init"
 
 # remove root password ('*') via vipw
 ## make sure host system have vfs.zfs.min_auto_ashift=12 for ZFS
